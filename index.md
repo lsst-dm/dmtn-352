@@ -52,13 +52,27 @@ By default Butler defines all the storage classes needed by the LSST Science Pip
 This has two problems: firstly defining many storage classes that are never used leads to performance slow downs (especially at start up) and, secondly and more seriously, since we can add new storage classes at any time it is possible for us to break users with a naming clash.
 
 Furthermore, to simplify development in the beginning the `StorageClassFactory` was configured as a per-process singleton.
-This is acceptable for a single butler connection or when connecting to multiple butlers with identical configurations, but unless care is taken it could lead to unforeseen errors in a shared multi-observatory archive where one user may want to make connections to multiple unrelated butler repositories in a single notebook.
+This is acceptable for a single butler connection or when connecting to multiple butlers with identical configurations, but unless care is taken it could lead to unforeseen errors in a shared multi-observatory archive where one user may want to make connections to multiple unrelated butler repositories in a single notebook but which have incompatible storage class definitions.
+
+Another downside of storage class definitions being available in the current way is that we never noticed that during graph execution an external user needs to inject their own storage class definitions into the environment to even be able to process data.
+Since this is quantum-backed butler execution they do not have access to a hand-rolled butler configuration that included their own definitions since they are not using that butler, and the only option is to specify the storage class definitions separately using the `DAF_BUTLER_CONFIG_PATH`.
+
+We need to consider our options regarding storage class discovery.
+It is already the case that the butler server is designed never to be required to load a storage class definition since it does not have access to any of the science payload code.
+
+It therefore would make sense for the storage class definitions to be extracted from `ButlerConfig`.
+A potential approach would be to have the butle configuration include a storage class collection label and a version string.
+The client code could then search for a registered entry point that understands that label and requests the storage class definitions for that version.
+This would benefit all butler users since it could allow Rubin to have a different definition of storage classes for Data Preview 2 and Data Release 1 and would immediately solve the problem of external users having to keep track of definitions that ship in the core butler code.
 
 ## Schema Migrations
 
 We provide some tooling for doing schema migrations in the form of `daf_butler_migrate`.
 The tooling is designed to be able to handle dimension universes that are not named "daf_butler" but we have had no feedback as to whether anyone else is using the tooling.
 It would be worth adding some tests that are explicitly not using the default universe name and also consider whether the package should be integrated into `daf_butler` itself.
+
+More importantly, the package should be modified to support Python entry points keyed by the dimension universe name so that the `butler migrate` command can find other migrations and support additional subcommands registered by external users.
+
 
 ## Dependency Management
 
@@ -68,13 +82,37 @@ We should try to switch the `obs_base` package over to the new geometry specific
 This would likely then lead to some additional functionality requests from external users but that is to be expected.
 Once `afw` is removed (it would still be an optional dependency for the legacy formatter I/O code) facilities such as calibration registration and raw data ingest would be available to the wider community.
 
+## Graph Building
+
+Not all external users use BPS for managing their batch workflows.
+This leads to some impedance mismatches as to what good defaults should be.
+For example, when making a graph the default for the command-line tool is not to include the datastore records.
+At Rubin we know that BPS is designed for include those records and we do not include them by default since they add unnecessary size to the graph when someone is doing anything other than using quantum backed butler for processing.
+
+There has been a request to change the default so that we always include the datastore records.
+This seems reasonable and we can ensure that `pipetask run` does not include them when it makes its own graph as currently configured.
+One future improvement we would like to investigate is to change how `run` works such that it also uses the graph backed butler (make the graph, execute from the graph, register outputs in the main butler).
+This would have the advantage of providing consistent execution at all scales but also solve the problem where we have had reports of external users sometimes trying to run large jobs in parallel with one `run` command and a SQLite butler over NFS.
+
+## Sequential Processing
+
+At Rubin we are either processing all the data at once for a data release where ordering of inputs does not matter during co-add production, or we are processing single frames (alert production).
+This is not generally the way that other observatories operate.
+
+### Incremental improvements
+
+In many cases you have data arriving in real time from the observatory and you want to process it as it arrives so you get the best possible co-add or calibration dataset as fast as possible.
+Butler is not set up to handle this because an output dataset is required to not have the same dataID as a dataset that is already present in that collection.
+If observation N is combined with observation N+1 and stored as a co-add dataset type, then if you try to combine that co-add with observation N+2 you can not write it out without using a new collection or including some discriminator in the dataID.
+
+
 ## Proposed Enhancements
 
 This section summarizes the proposed enhancements.
 
 1. Replace the `StorageClassFactory` singleton with a per-butler singleton so that different butler repositories can not interfere with each other.
 2. Replace the current configuration system with Pydantic models and improve configuration detection and overrides, separating server-side and client-side configuration.
-   This would also involve moving the LSST Science Pipelines definitions out of `daf_butler`.
+   This would also involve moving the LSST Science Pipelines storage class definitions out of `daf_butler`.
 3. Remove the `afw` dependency from `obs_base` (apart from legacy formatters and assemblers).
 
 ## References
