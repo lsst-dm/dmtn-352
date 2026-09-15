@@ -82,11 +82,14 @@ Once we have separated the items out that tend to get the most edits, we can lik
 The `StorageClassFactory` work is only lightly coupled to the config reorganization if we adopt a labeled cache where the singleton is replaced by a new API that can return a new instance by name.
 A similar approach could be used for handling formatter configurations.
 
-One serious issue is that currently a `DatasetType` and `StoredFileInfo` assume that they can look up the storage class by using the singleton.
-Neither of these classes know which Butler they are attached to (and generally should not need to know).
-Additionally, `InMemoryDatasetHandle` assumes it can also access a storage class by name at any time.
+One serious issue is that currently a `DatasetType` assumes that it can look up the storage class by using the singleton.
+This class does not know which Butler it is attached to (and generally should not need to know) but some definition is required somewhere.
+Additionally, `StoredFileInfo` and `InMemoryDatasetHandle` assume they can also access a storage class by name at any time but in many cases a Butler is available to them.
 Pipeline construction also makes some assumptions concerning storage class availability.
-This will need some design work and potentially API changes, but might be mitigated by replacing the singleton with the proposed per-label cache so long as a `DatasetType` can know its own label to use.
+This will need some design work and likely API changes, but might be mitigated by replacing the singleton with the proposed per-label cache so long as a `DatasetType` can know its own label to use similar to how it has to know its universe, although we have to be careful how we handle equality of `DatasetType`s for differing labels.
+A butler-to-butler transfer would be required to resolve both storage classes, if the names differ or the labels differ, to determine if the Python type is compatible, but when it is transferred it would need to be modified to adopt the storage class factory of its target butler, similar to how the `conform_to` API ensures that universe differences are handled (the simplest approach may be to replace the `universe` parameter with a `schema` parameter that folds in the universe information and the configuration label rather than adding a second parameter to the constructor and `conform_to`).
+Currently dataset type compatibility assumes that the names matching is sufficient, which is only true because of the singleton.
+If we adopt this new namespace plus versioning approach for storage classes and formatters (for example "rubin-lsst" and "dp1") then we would ensure that quantum graphs also store this information such that at runtime the correct storage class definitions and formatter configuration can be loaded (pipeline execution requires formatter configuration for writes).
 
 ```{important} **Time estimate:**
 Taking an existing software-derived schema and configuration system and turning it into a Pydantic schema with runtime extensions is potentially something that can be handled with LLM-assistance.
