@@ -115,11 +115,12 @@ Less than 1 week.
 The core of the Butler middleware is installable from PyPI but the instrument packages, subclasses of `obs_base`, are not because there is a core dependency on the `afw` package when representing camera geometry.
 The new `lsst.images` package has its own camera geometry classes that depend solely on the AST library {cite:p}`2016A&C....15...33B`.
 We should try to switch the `obs_base` package over to the new geometry specification (the camera geometry is required to work out the visit regions) so that external users have the option of defining `obs` packages of their own without adopting the full science pipelines codebase.
+The package currently relies on generating geometries with `afw` and then converting them to the new format, but we would have to re-engineer how the YAML geometry specifications are read in and converted to the new form.
 This would likely then lead to some additional functionality requests from external users but that is to be expected.
 Once `afw` is removed (it would still be an optional dependency for the legacy formatter I/O code) facilities such as calibration registration and raw data ingest would be available to the wider community.
 
 ```{important} **Time estimate:**
-1 week.
+4 weeks.
 ```
 
 ## Graph Building
@@ -137,7 +138,7 @@ This would have the advantage of providing consistent execution at all scales bu
 
 ```{important} **Time estimate:**
 1 day to change the default.
-2 weeks to change how `run` works to make it consistent for all users (BPS and non-BPS users).
+4 weeks to change how `run` works to make it consistent for all users (BPS and non-BPS users).
 ```
 
 ## Sequential Processing
