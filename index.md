@@ -135,7 +135,6 @@ This seems reasonable and we can ensure that `pipetask run` does not include the
 One future improvement we would like to investigate is to change how `run` works such that it also uses the graph backed butler (make the graph, execute from the graph, register outputs in the main butler).
 This would have the advantage of providing consistent execution at all scales but also solve the problem where we have had reports of external users sometimes trying to run large jobs in parallel with one `run` command and a SQLite butler over NFS.
 
-
 ```{important} **Time estimate:**
 1 day to change the default.
 4 weeks to change how `run` works to make it consistent for all users (BPS and non-BPS users).
@@ -157,6 +156,17 @@ This work does not directly benefit Rubin at this time, although it may be possi
 ```{important} **Time estimate:**
 This is currently thought of as a research topic since it would require analysis of different options including creation of a special dimension that corresponds to a UUIDv7.
 Expect anything between 2 weeks and 1 month of work to demonstrate this new functionality.
+```
+
+### Persistence Correction
+
+Persistence is a category of detector artifacts where the correction for one observation depends on the previous in. While weak persistence has been measured in LSSTCam's detectors, the effect is small enough to be ignored, as is usually the case for modern CCDs.
+This is not true of most infrared detectors, and other projects (SPHEREx, PFS) that otherwise use the Rubin middleware have not been able to use it for this stage of their pipelines, because it requires the same dataset type to be used as both an input and output of a task.
+
+Unlike incremental processing, persistence correction is already wholly compatible with the butler data model; only the quantum graph system would need to be updated.
+
+```{important} **Time estimate:**
+Signficant thought has already gone into this problem, and a solid design could probably be delivered with a week of focused effort.  Implementation for a production system ought to be doable with a month's focused effort, but since this could be disruptive to quantum graph file format, that effort might need to be spread out over a longer period to allow for a deprecation cycle.
 ```
 
 ## References
