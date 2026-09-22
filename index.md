@@ -11,7 +11,7 @@ This document will explore ways in which we an adjust the Butler and other packa
 The LSST Science Pipelines {cite:p}`PSTN-019` include a data abstraction layer known as the Butler {cite:p}`2022SPIE12189E..11J` that hides away from the user where files are stored, what file format they are stored in, and how to read and write those files.
 The user can query the Butler registry for datasets and only interacts with Python representations of those datasets.
 Additionally there is software to combine this registry with a data reduction pipeline definition and generate what is known as a "quantum graph" -- a graph including every processing step to be executed along with the input datasets and all the expected output datasets.
-The Butler and graph middleware (`pipe_base`) have been adopted by a variety of places including the SPHEREx project {cite:p}`2026ApJS..285...67A`, Subaru's PFS, and WFST {cite:p}`2025arXiv250115018C`.
+The Butler and graph middleware (`pipe_base`) have been adopted by a variety of places including the SPHEREx project {cite:p}`2026ApJS..285...67A`, Subaru's PFS {cite:p}`2026arXiv260614012T`, and WFST {cite:p}`2025arXiv250115018C`.
 There are design decisions in the Butler that cause friction for external users where a Rubin user does not.
 This document will discuss these problems and describe potential solutions.
 
