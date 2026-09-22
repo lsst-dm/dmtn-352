@@ -161,15 +161,16 @@ Expect anything between 2 weeks and 1 month of work to demonstrate this new func
 ### Persistence Correction
 
 Persistence is a category of detector artifacts where the correction for one observation depends on the previous in. While weak persistence has been measured in LSSTCam's detectors, the effect is small enough to be ignored, as is usually the case for modern CCDs.
-This is not true of most infrared detectors, and other projects (SPHEREx, PFS) that otherwise use the Rubin middleware have not been able to use it for this stage of their pipelines, because it requires the same dataset type to be used as both an input and output of a task.
+This is not true of most infrared detectors, and other projects (SPHEREx, PFS) that otherwise use the Rubin middleware have not been able to fully use it for this stage of their pipelines.
 
-Unlike incremental processing, persistence correction is already wholly compatible with the butler data model; only the quantum graph system would need to be updated.
+Unlike incremental processing, persistence correction is already wholly compatible with the butler data model; only the pipeline and quantum graph system need to be modified.
 
 ```{important} **Time estimate:**
-Signficant thought has already gone into this problem, and a solid design could probably be delivered with a week of focused effort.  Implementation for a production system ought to be doable with a month's focused effort, but since this could be disruptive to quantum graph file format, that effort might need to be spread out over a longer period to allow for a deprecation cycle.
+Signficant thought has already gone into this problem, and a solid design could probably be delivered with a week of focused effort.  Implementation for a production system ought to be doable with a month's focused effort, but since this could be disruptive to the quantum graph file format, that effort might need to be spread out over a longer period to allow for a deprecation cycle.
 ```
 
 ## References
 
 ```{bibliography}
+
 ```
