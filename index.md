@@ -1,9 +1,10 @@
 # Enhancing the Portability of the Butler
 
 ```{abstract}
-The LSST Science Pipelines Data Butler and associated middleware, has been developed almost entirely focused on the requirements associated with processing LSST data. Our main acknowledgment of the wider community was a deliberate decision early on to make the software installable standalone from PyPI, thereby theoretically enabling other observatories to use it. This has enabled SPHEREx to adopt the Butler but some early Butler design decisions do not make it as easy as it should be.
+Initially developed for processing LSST data, the LSST Science Pipelines Data Butler (and associated middleware) is now in productio use in other observatories, either as in conjunction with the LSST Science Pipelines (eg. Subaru Hyper Suprime-Cam) or standalone (eg. NASA SPHEREx).
+Our initial effort to support external adoption focused on basic re-usability, such as making it installable standalone from PyPI.
 
-This document will explore ways in which we an adjust the Butler and other packages to make it more extensible and reusable.
+For this document we have synthesized feedback from external-to-Rubin Butler adopters in order to identify future developments that can further lower the barrier to adoption.
 ```
 
 ## Introduction
